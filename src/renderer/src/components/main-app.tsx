@@ -1,0 +1,164 @@
+import { useEffect, useRef, useState } from 'react'
+import ScreenshotsView from './screenshot-view'
+import { useQueryClient } from '@tanstack/react-query'
+import Solutions from './solutions'
+import { useToast } from '@renderer/providers/toast-context'
+import OverlayIndicator from './overlay-indicator'
+interface MainAppProps {
+  currentLanguage: string
+  setLanguage: (language: string) => void
+}
+
+// eslint-disable-next-line react-refresh/only-export-components, react/prop-types
+const MainApp: React.FC<MainAppProps> = ({ currentLanguage, setLanguage }) => {
+  const [view, setView] = useState<'queue' | 'solutions' | 'debug'>('queue')
+  const [isOverlayMode, setIsOverlayMode] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const queryClient = useQueryClient()
+  const { showToast } = useToast()
+  useEffect(() => {
+    const cleanup = window.electronAPI.onResetView(() => {
+      queryClient.invalidateQueries({
+        queryKey: ['screenshots']
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['problem_statement']
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['solution']
+      })
+      queryClient.invalidateQueries({
+        queryKey: ['new_solution']
+      })
+      setView('queue')
+    })
+
+    return () => cleanup()
+  }, [])
+
+  // Listen for overlay mode changes
+  useEffect(() => {
+    const cleanup = window.electronAPI.onOverlayModeChanged((overlayMode) => {
+      setIsOverlayMode(overlayMode)
+    })
+
+    return () => cleanup()
+  }, [])
+
+  useEffect(() => {
+    const cleanupFunctions = [
+      window.electronAPI.onSolutionStart(() => {
+        setView('solutions')
+      }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      window.electronAPI.onProblemExtracted((data: any) => {
+        console.log('problem extracted', data)
+        if (view === 'queue') {
+          queryClient.invalidateQueries({
+            queryKey: ['problem_statement']
+          })
+          queryClient.setQueryData(['problem_statement'], data)
+        }
+      }),
+      window.electronAPI.onResetView(() => {
+        queryClient.invalidateQueries({
+          queryKey: ['screenshots']
+        })
+        queryClient.invalidateQueries({
+          queryKey: ['problem_statement']
+        })
+        queryClient.invalidateQueries({
+          queryKey: ['solution']
+        })
+        setView('queue')
+      }),
+      window.electronAPI.onResetView(() => {
+        queryClient.setQueryData(['problem_statement'], null)
+      }),
+      window.electronAPI.onSolutionError((error: string) => {
+        showToast('Error', error, 'error')
+      })
+    ]
+
+    return () => {
+      cleanupFunctions.forEach((cleanup) => {
+        cleanup()
+      })
+    }
+  }, [view])
+
+  useEffect(() => {
+    if (!containerRef.current || isOverlayMode) return
+
+    const updateDimensions = () => {
+      if (!containerRef.current || isOverlayMode) return
+      
+      const height = containerRef.current.scrollHeight || 600
+      const width = containerRef.current.scrollWidth || 800
+      
+      // Determine if we have meaningful content
+      const hasContent = height > 100 && width > 100
+      
+      window.electronAPI?.updateContentDimensions({
+        width,
+        height
+      })
+      
+      // Update content state for click-through behavior
+      window.electronAPI?.setHasContent(hasContent)
+    }
+
+    updateDimensions()
+
+    const fallbackTimer = setTimeout(() => {
+      if (!isOverlayMode) {
+        window.electronAPI?.updateContentDimensions({
+          width: 800,
+          height: 600
+        })
+      }
+    }, 500)
+
+    const resizeObserver = new ResizeObserver(updateDimensions)
+    resizeObserver.observe(containerRef.current)
+
+    const mutationObserver = new MutationObserver(updateDimensions)
+    mutationObserver.observe(containerRef.current, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true
+    })
+
+    const delayedUpdate = setTimeout(updateDimensions, 1000)
+
+    return () => {
+      clearTimeout(fallbackTimer)
+      clearTimeout(delayedUpdate)
+      resizeObserver.disconnect()
+      mutationObserver.disconnect()
+    }
+  }, [view, isOverlayMode])
+
+  return (
+    <div ref={containerRef} className="min-h-0 relative">
+      {isOverlayMode ? (
+        <OverlayIndicator isOverlayMode={isOverlayMode} />
+      ) : (
+        <>
+          {view === 'queue' ? (
+            <ScreenshotsView
+              setView={setView}
+              currentLanguage={currentLanguage}
+              setLanguage={setLanguage}
+            />
+          ) : view === 'solutions' ? (
+            <Solutions setView={setView} currentLanguage={currentLanguage} setLanguage={setLanguage} />
+          ) : null}
+        </>
+      )}
+    </div>
+  )
+}
+
+export default MainApp

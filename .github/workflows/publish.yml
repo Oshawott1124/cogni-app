@@ -1,0 +1,69 @@
+name: Build and Publish Clueless
+
+on:
+  push:
+    tags:
+      - v*
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    timeout-minutes: 60
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      # Linux-specific build dependencies (fixed for Ubuntu 24.04)
+      - name: Install Linux build dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libarchive-tools fakeroot rpm \
+            libx11-dev libxss1 libnss3 libxkbfile-dev \
+            libasound2t64
+
+      # Fix app-builder execute permissions (Ubuntu)
+      - name: Make app-builder executable
+        if: matrix.os == 'ubuntu-latest'
+        run: chmod +x ./node_modules/app-builder-bin/linux/x64/app-builder
+
+      # Build and Publish for Windows
+      - name: Build and Publish (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 45
+          max_attempts: 3
+          command: npm run build:win -- --publish onTag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG: electron-builder
+
+      # Build and Publish for Linux
+      - name: Build and Publish (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 45
+          max_attempts: 3
+          command: npm run build:linux -- --publish onTag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG: electron-builder

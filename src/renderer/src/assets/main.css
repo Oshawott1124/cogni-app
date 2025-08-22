@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* Overlay animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Component hover effects */
+.overlay-component:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px rgba(88, 101, 242, 0.3);
+}
+
+.overlay-component.edit-mode:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(88, 101, 242, 0.4);
+}
+
+.overlay-component.dragging {
+  transform: rotate(2deg) scale(1.05) !important;
+  box-shadow: 0 12px 30px rgba(88, 101, 242, 0.5) !important;
+  z-index: 1000 !important;
+}
+
+/* Background overlay transitions */
+.background-overlay {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.background-overlay.edit-mode {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Text selection disabled for overlay */
+.overlay-container {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Background overlay behavior */
+.background-overlay {
+  /* Electron handles click-through at the window level */
+}
+
+.background-overlay.edit-mode {
+  /* Background becomes visible and interactive in edit mode */
+}
+
+/* Smooth transitions for all overlay elements */
+.overlay-component {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.overlay-component:not(.dragging) {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
