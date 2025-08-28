@@ -18,6 +18,8 @@ interface DraggableComponentProps {
   children: React.ReactNode
   onClick?: () => void
   zIndex?: number
+  onMouseEnter?: () => void // New prop
+  onMouseLeave?: () => void // New prop
 }
 
 const DraggableComponent: React.FC<DraggableComponentProps> = ({
@@ -32,7 +34,9 @@ const DraggableComponent: React.FC<DraggableComponentProps> = ({
   style = {},
   children,
   onClick,
-  zIndex = 10
+  zIndex = 10,
+  onMouseEnter: propOnMouseEnter, // Destructure and rename
+  onMouseLeave: propOnMouseLeave // Destructure and rename
 }) => {
   const elementRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -66,21 +70,6 @@ const DraggableComponent: React.FC<DraggableComponentProps> = ({
       y: e.clientY - rect.top
     })
   }, [isEditMode, onClick])
-
-  // Handle mouse enter/leave for dynamic click-through
-  const handleMouseEnter = useCallback(() => {
-    if (!isEditMode) {
-      // Make window interactive when hovering over component
-      window.electronAPI?.setMouseIgnore(false)
-    }
-  }, [isEditMode])
-
-  const handleMouseLeave = useCallback(() => {
-    if (!isEditMode) {
-      // Make window click-through when leaving component
-      window.electronAPI?.setMouseIgnore(true)
-    }
-  }, [isEditMode])
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging || !isEditMode) return
@@ -153,8 +142,8 @@ const DraggableComponent: React.FC<DraggableComponentProps> = ({
       className={`overlay-component ${className} ${isDragging ? 'dragging' : ''} ${isEditMode ? 'edit-mode' : ''}`}
       style={componentStyle}
       onMouseDown={handleMouseDown}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={propOnMouseEnter}
+      onMouseLeave={propOnMouseLeave}
       data-component={id}
     >
       {children}

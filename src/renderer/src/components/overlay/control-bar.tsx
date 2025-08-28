@@ -81,8 +81,7 @@ const ControlBar: React.FC<ControlBarProps> = ({ isEditMode, position, onPositio
       zIndex={10}
       style={{
         background: 'rgba(12, 13, 13, 0.6)',
-        border: 'none',
-        borderRadius: '12px',
+        borderRadius: '16px',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
         backdropFilter: 'blur(20px)',
         padding: '12px 16px',
@@ -106,7 +105,7 @@ const ControlBar: React.FC<ControlBarProps> = ({ isEditMode, position, onPositio
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
-          background: 'rgba(47, 50, 56, 0.8)',
+          background: 'rgba(40, 42, 46, 0.8)',
           borderRadius: '12px',
           padding: '6px 12px'
         }}>
