@@ -129,7 +129,7 @@ const DraggableComponent: React.FC<DraggableComponentProps> = ({
       ? '0 8px 25px rgba(88, 101, 242, 0.4)' 
       : isEditMode 
         ? '0 4px 12px rgba(88, 101, 242, 0.2)'
-        : '0 4px 12px rgba(0, 0, 0, 0.3)',
+        : '0 4px 12px rgba(0, 0, 0, 0)',
     transform: isDragging ? 'rotate(2deg) scale(1.05)' : 'none',
     zIndex: isDragging ? 1000 : zIndex,
     pointerEvents: 'auto', // Components are always interactive

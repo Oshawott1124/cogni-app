@@ -42,8 +42,8 @@ const SuggestionArea: React.FC<SuggestionAreaProps> = ({
       zIndex={9}
       style={{
         background: 'rgba(12, 13, 13, 0.0)', // Transparent background
-        borderColor: '#5865f2',
-        opacity: isEditMode ? 1 : 0.9,
+        // borderColor: '#5865f2',
+        opacity: isEditMode ? 1 : 1,
         padding: '10px',
         flexDirection: 'column',
         gap: '8px',
