@@ -41,7 +41,7 @@ const SuggestionArea: React.FC<SuggestionAreaProps> = ({
       height={300} // Increased height to accommodate chat-like content
       zIndex={9}
       style={{
-        background: 'rgba(12, 13, 13, 0.4)', // Transparent background
+        background: 'rgba(12, 13, 13, 0.0)', // Transparent background
         borderColor: '#5865f2',
         opacity: isEditMode ? 1 : 0.9,
         padding: '10px',
