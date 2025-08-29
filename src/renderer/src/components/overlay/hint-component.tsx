@@ -10,12 +10,16 @@ interface HintComponentProps {
   isEditMode: boolean
   position?: ComponentPosition
   onPositionChange: (position: ComponentPosition) => void
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
 }
 
-const HintComponent: React.FC<HintComponentProps> = ({ 
-  isEditMode, 
-  position, 
-  onPositionChange 
+const HintComponent: React.FC<HintComponentProps> = ({
+  isEditMode,
+  position,
+  onPositionChange,
+  onMouseEnter,
+  onMouseLeave
 }) => {
   const [currentHint, setCurrentHint] = useState(0)
   const [isVisible, setIsVisible] = useState(true)
@@ -79,6 +83,8 @@ const HintComponent: React.FC<HintComponentProps> = ({
       height={70}
       onClick={handleClick}
       zIndex={8}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       style={{
         background: 'rgba(88, 101, 242, 0.2)',
         borderColor: 'rgba(88, 101, 242, 0.5)',

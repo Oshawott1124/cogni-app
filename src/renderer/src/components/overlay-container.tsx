@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react'
 import ControlBar from './overlay/control-bar'
 import SuggestionArea from './overlay/suggestion-area'
 import HintComponent from './overlay/hint-component'
-import MessageAIComponent from './overlay/message-ai-component'
 import { useToast } from '@renderer/providers/toast-context'
 import { OverlayInteractionContext } from '@renderer/providers/overlay-interaction-context'
 
@@ -45,16 +44,13 @@ const OverlayContainer: React.FC = () => {
   useEffect(() => {
     const cleanup = window.electronAPI.onEditModeChanged?.((editMode: boolean) => {
       setIsEditMode(editMode)
-      if (editMode) {
-        showToast('Edit Mode', 'Drag components to reposition them', 'neutral')
-      } else {
+      if (!editMode) {
         savePositions()
-        showToast('Overlay Mode', 'Components are now interactive', 'success')
       }
     })
 
     return () => cleanup?.()
-  }, [showToast])
+  })
 
   // Load saved positions on mount
   useEffect(() => {
@@ -219,13 +215,6 @@ const OverlayContainer: React.FC = () => {
             onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
           />
           
-          <MessageAIComponent
-            isEditMode={isEditMode}
-            position={positions['message-ai-component']}
-            onPositionChange={(pos) => updatePosition('message-ai-component', pos)}
-            onMouseEnter={() => setIsMouseOverAnyComponent(true)} // Pass down mouse events
-            onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
-          />
         </OverlayInteractionContext.Provider>
       </div>
     </div>

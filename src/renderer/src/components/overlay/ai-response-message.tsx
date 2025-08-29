@@ -11,11 +11,13 @@ interface Suggestion {
 interface AIResponseMessageProps {
   response: string
   suggestions: Suggestion[]
+  isEditMode: boolean
 }
 
 export const AIResponseMessage = memo(function AIResponseMessage({
   response,
-  suggestions
+  suggestions,
+  isEditMode
 }: AIResponseMessageProps) {
   const { setInput, sendCommand } = useOverlayInteraction()
 
@@ -47,7 +49,7 @@ export const AIResponseMessage = memo(function AIResponseMessage({
         <div className="flex flex-wrap justify-end gap-2">
           {suggestions.map((suggestion, index) => (
             <div key={index} onClick={() => handleBubbleClick(suggestion)}>
-              <SuggestionBubble suggestion={suggestion} />
+              <SuggestionBubble suggestion={suggestion} isEditMode={isEditMode} />
             </div>
           ))}
         </div>

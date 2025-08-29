@@ -20,9 +20,17 @@ interface ControlBarProps {
   isEditMode: boolean
   position?: ComponentPosition
   onPositionChange: (position: ComponentPosition) => void
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
 }
 
-const ControlBar: React.FC<ControlBarProps> = ({ isEditMode, position, onPositionChange }) => {
+const ControlBar: React.FC<ControlBarProps> = ({
+  isEditMode,
+  position,
+  onPositionChange,
+  onMouseEnter,
+  onMouseLeave
+}) => {
   const [isListening, setIsListening] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
   const [isVideoOff, setIsVideoOff] = useState(false)
@@ -40,25 +48,12 @@ const ControlBar: React.FC<ControlBarProps> = ({ isEditMode, position, onPositio
     console.log('Microphone toggled:', isMuted ? 'unmuted' : 'muted')
   }
 
-  const handleVideoClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (isEditMode) return
-    setIsVideoOff(!isVideoOff)
-    console.log('Video toggled:', isVideoOff ? 'on' : 'off')
-  }
 
   const handleScreenShareClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     if (isEditMode) return
     setIsScreenSharing(!isScreenSharing)
     console.log('Screen sharing toggled:', isScreenSharing ? 'stopped' : 'started')
-  }
-
-  const handleVoiceClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (isEditMode) return
-    setIsListening(!isListening)
-    console.log('Voice input toggled:', isListening ? 'stopped' : 'started')
   }
 
 
@@ -79,6 +74,8 @@ const ControlBar: React.FC<ControlBarProps> = ({ isEditMode, position, onPositio
       width={400}
       height={56}
       zIndex={10}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       style={{
         background: 'rgba(12, 13, 13, 0.6)',
         borderRadius: '16px',
