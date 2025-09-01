@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import ControlBar from './overlay/control-bar'
 import SuggestionArea from './overlay/suggestion-area'
-import HintComponent from './overlay/hint-component'
+import NotesComponent from './overlay/notes-component' // Changed from HintComponent
 import { useToast } from '@renderer/providers/toast-context'
 import { OverlayInteractionContext } from '@renderer/providers/overlay-interaction-context'
 
@@ -207,10 +207,10 @@ const OverlayContainer: React.FC = () => {
             onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
           />
           
-          <HintComponent
+          <NotesComponent // Changed from HintComponent
             isEditMode={isEditMode}
-            position={positions['hint-component']}
-            onPositionChange={(pos) => updatePosition('hint-component', pos)}
+            position={positions['notes-component']} // Changed from hint-component
+            onPositionChange={(pos) => updatePosition('notes-component', pos)} // Changed from hint-component
             onMouseEnter={() => setIsMouseOverAnyComponent(true)} // Pass down mouse events
             onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
           />
