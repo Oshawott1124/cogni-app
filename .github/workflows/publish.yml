@@ -1,4 +1,4 @@
-name: Build and Publish Clueless
+name: Build and Publish Cogni
 
 on:
   push:

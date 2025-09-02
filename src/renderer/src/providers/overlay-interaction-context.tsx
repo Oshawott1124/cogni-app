@@ -1,4 +1,4 @@
-import { createContext, useContext, useCallback } from 'react'
+import { createContext, useContext } from 'react'
 
 interface OverlayInteractionContextType {
   setInput: (input: string) => void

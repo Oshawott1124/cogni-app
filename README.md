@@ -1,8 +1,9 @@
 # Cogni-App: Your AI-Powered Overlay Assistant
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/YifangJin/cogni-app)
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)](https://github.com/YifangJin/cogni-app/issues)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/oshawott1124/cogni-app)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)](https://github.com/oshawott1124/cogni-app/issues)
+All right reserved @Complexity LLC 2025
 
 An intelligent, screen-aware AI assistant that uses screenshots to understand your context and provide help through a customizable, interactive overlay. Built with Electron, React, and TypeScript.
 
@@ -32,7 +33,7 @@ An intelligent, screen-aware AI assistant that uses screenshots to understand yo
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/YifangJin/cogni-app.git
+    git clone https://github.com/YifanJin/cogni-app.git
     cd cogni-app
     ```
 

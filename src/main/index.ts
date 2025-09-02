@@ -8,6 +8,7 @@ import { KeyboardShortcutHelper } from './lib/keyboard-shortcuts'
 import { ScreenshotManager } from './lib/screenshot-manager'
 import { ProcessingManager } from './lib/processing-manager'
 import { configManager } from './lib/config-manager'
+import { sessionManager } from './lib/session-manager'
 
 let tray: Tray | null = null
 
@@ -25,6 +26,11 @@ export const state = {
   step: 0,
   currentX: 0,
   currentY: 0,
+  componentVisibility: {
+    controlBar: true,
+    suggestionArea: true,
+    notesComponent: true
+  },
 
   keyboardShortcutHelper: null as KeyboardShortcutHelper | null,
   screenshotManager: null as ScreenshotManager | null,
@@ -335,23 +341,46 @@ function showMainWindow(): void {
   console.log('✅ Window shown and interactive again')
 }
 
-// === Tray Logic ===
-function createTray() {
-  const trayIconPath = path.join(__dirname, '../../resources/favicon_tray.svg')
-  const trayIcon = nativeImage.createFromPath(trayIconPath)
+// === Component Visibility Logic ===
+function toggleComponent(componentName: 'controlBar' | 'suggestionArea' | 'notesComponent') {
+  // Toggle the component visibility
+  state.componentVisibility[componentName] = !state.componentVisibility[componentName]
+  
+  // Send the updated visibility state to the renderer
+  state.mainWindow?.webContents.send('component-visibility-changed', {
+    component: componentName,
+    visible: state.componentVisibility[componentName]
+  })
+  
+  // Update the tray menu to reflect the new state
+  updateTrayMenu()
+  
+  console.log(`${componentName} visibility toggled to:`, state.componentVisibility[componentName])
+}
 
-  tray = new Tray(trayIcon)
-  tray.setToolTip('Silent Coder')
-
+function updateTrayMenu() {
+  if (!tray) return
+  
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: state.isEditMode ? 'Exit Edit Mode' : 'Enter Edit Mode',
-      click: toggleEditMode
+      label: 'Control Bar',
+      type: 'checkbox',
+      checked: state.componentVisibility.controlBar,
+      click: () => toggleComponent('controlBar')
     },
     {
-      label: state.isWindowVisible ? 'Hide Overlay' : 'Show Overlay',
-      click: toggleMainWindow
+      label: 'Suggestion Area',
+      type: 'checkbox', 
+      checked: state.componentVisibility.suggestionArea,
+      click: () => toggleComponent('suggestionArea')
     },
+    {
+      label: 'Notes Component',
+      type: 'checkbox',
+      checked: state.componentVisibility.notesComponent,
+      click: () => toggleComponent('notesComponent')
+    },
+    { type: 'separator' },
     {
       label: 'Settings',
       click: () => {
@@ -359,14 +388,32 @@ function createTray() {
         if (!state.isWindowVisible) {
           showMainWindow()
         }
-        // 2. Send a message to the renderer process to open the settings.
+        // 2. Ensure window is interactive for settings dialog
+        state.mainWindow?.setIgnoreMouseEvents(false)
+        // 3. Send a message to the renderer process to open the settings.
         state.mainWindow?.webContents.send('show-settings-dialog')
       }
     },
     { type: 'separator' },
     { label: 'Quit', click: () => app.quit() }
   ])
+  
   tray.setContextMenu(contextMenu)
+}
+
+// === Tray Logic ===
+function createTray() {
+  // Use the existing icon.png and resize it for tray
+  const trayIcon = nativeImage.createFromPath(icon)
+  
+  // Resize the icon to appropriate tray size
+  const resizedIcon = trayIcon.resize({ width: 24, height: 24 })
+
+  tray = new Tray(resizedIcon)
+  tray.setToolTip('Cogni - AI Assistant')
+
+  // Initialize the tray menu
+  updateTrayMenu()
 
   if (process.platform === 'darwin') {
     app.dock?.hide()
@@ -642,6 +689,16 @@ app.whenReady().then(initializeApp)
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
+  }
+})
+
+// Clean up session data before quitting (preserve transcript)
+app.on('before-quit', () => {
+  console.log('App is quitting, cleaning up session data...')
+  try {
+    sessionManager.cleanupSession()
+  } catch (error) {
+    console.error('Error cleaning up session on quit:', error)
   }
 })
 

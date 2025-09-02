@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import ControlBar from './overlay/control-bar'
 import SuggestionArea from './overlay/suggestion-area'
 import NotesComponent from './overlay/notes-component' // Changed from HintComponent
-import { useToast } from '@renderer/providers/toast-context'
+
 import { OverlayInteractionContext } from '@renderer/providers/overlay-interaction-context'
 
 interface ComponentPosition {
@@ -26,7 +26,12 @@ const OverlayContainer: React.FC = () => {
   const [aiResponse, setAiResponse] = useState<string>('')
   const [nextStepSuggestions, setNextStepSuggestions] = useState<Suggestion[]>([])
   const [isMouseOverAnyComponent, setIsMouseOverAnyComponent] = useState(false) // New state
-  const { showToast } = useToast()
+  const [componentVisibility, setComponentVisibility] = useState({
+    controlBar: true,
+    suggestionArea: true,
+    notesComponent: true
+  })
+
 
   // Simulate an AI response and suggestions
   useEffect(() => {
@@ -55,6 +60,35 @@ const OverlayContainer: React.FC = () => {
   // Load saved positions on mount
   useEffect(() => {
     loadSavedPositions()
+  }, [])
+
+  // Load initial component visibility and listen for changes
+  useEffect(() => {
+    // Load initial visibility state
+    const loadVisibility = async () => {
+      try {
+        const result = await window.electronAPI.getComponentVisibility()
+        if (result.success && result.visibility) {
+          setComponentVisibility(result.visibility)
+        }
+      } catch (error) {
+        console.error('Failed to load component visibility:', error)
+      }
+    }
+
+    loadVisibility()
+
+    // Listen for visibility changes from tray menu
+    const cleanup = window.electronAPI.onComponentVisibilityChanged?.(
+      (data: { component: string; visible: boolean }) => {
+        setComponentVisibility((prev) => ({
+          ...prev,
+          [data.component]: data.visible
+        }))
+      }
+    )
+
+    return () => cleanup?.()
   }, [])
 
   // Electron handles click-through dynamically
@@ -189,31 +223,37 @@ const OverlayContainer: React.FC = () => {
         }}
       >
         <OverlayInteractionContext.Provider value={{ setInput, sendCommand }}>
-          <ControlBar
-            isEditMode={isEditMode}
-            position={positions['control-bar']}
-            onPositionChange={(pos) => updatePosition('control-bar', pos)}
-            onMouseEnter={() => setIsMouseOverAnyComponent(true)} // Pass down mouse events
-            onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
-          />
+          {componentVisibility.controlBar && (
+            <ControlBar
+              isEditMode={isEditMode}
+              position={positions['control-bar']}
+              onPositionChange={(pos) => updatePosition('control-bar', pos)}
+              onMouseEnter={() => setIsMouseOverAnyComponent(true)} // Pass down mouse events
+              onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
+            />
+          )}
           
-          <SuggestionArea
-            isEditMode={isEditMode}
-            position={positions['suggestion-area']}
-            onPositionChange={(pos) => updatePosition('suggestion-area', pos)}
-            aiResponse={aiResponse}
-            nextStepSuggestions={nextStepSuggestions}
-            onMouseEnter={() => setIsMouseOverAnyComponent(true)} // Pass down mouse events
-            onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
-          />
+          {componentVisibility.suggestionArea && (
+            <SuggestionArea
+              isEditMode={isEditMode}
+              position={positions['suggestion-area']}
+              onPositionChange={(pos) => updatePosition('suggestion-area', pos)}
+              aiResponse={aiResponse}
+              nextStepSuggestions={nextStepSuggestions}
+              onMouseEnter={() => setIsMouseOverAnyComponent(true)} // Pass down mouse events
+              onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
+            />
+          )}
           
-          <NotesComponent // Changed from HintComponent
-            isEditMode={isEditMode}
-            position={positions['notes-component']} // Changed from hint-component
-            onPositionChange={(pos) => updatePosition('notes-component', pos)} // Changed from hint-component
-            onMouseEnter={() => setIsMouseOverAnyComponent(true)} // Pass down mouse events
-            onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
-          />
+          {componentVisibility.notesComponent && (
+            <NotesComponent // Changed from HintComponent
+              isEditMode={isEditMode}
+              position={positions['notes-component']} // Changed from hint-component
+              onPositionChange={(pos) => updatePosition('notes-component', pos)} // Changed from hint-component
+              onMouseEnter={() => setIsMouseOverAnyComponent(true)} // Pass down mouse events
+              onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
+            />
+          )}
           
         </OverlayInteractionContext.Provider>
       </div>

@@ -57,6 +57,20 @@ export interface ElectronAPI {
   
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   removeListener: (eventName: string, callback: (...args: any[]) => void) => void
+
+  // Session Management APIs
+  createNewSession: () => Promise<{ success: boolean; sessionId?: string; error?: string }>
+  getCurrentSession: () => Promise<{ success: boolean; data?: any; error?: string }>
+  updateSessionNotes: (notes: string) => Promise<{ success: boolean; error?: string }>
+  uploadSessionFile: () => Promise<{ success: boolean; files?: any[]; error?: string }>
+  removeSessionFile: (fileName: string) => Promise<{ success: boolean; error?: string }>
+  cleanupSession: () => Promise<{ success: boolean; error?: string }>
+  getAllSessions: () => Promise<{ success: boolean; sessions?: string[]; error?: string }>
+  getSessionDirectory: () => Promise<{ success: boolean; directory?: string; error?: string }>
+
+  // Component Visibility APIs
+  getComponentVisibility: () => Promise<{ success: boolean; visibility?: any; error?: string }>
+  onComponentVisibilityChanged: (callback: (data: { component: string; visible: boolean }) => void) => () => void
 }
 
 declare global {

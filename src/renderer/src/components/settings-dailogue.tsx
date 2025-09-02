@@ -46,13 +46,13 @@ const modelCategories: ModelCategory[] = [
     ],
     geminiModels: [
       {
-        id: 'gemini-1.5-pro',
-        name: 'Gemini 1.5 Pro',
+        id: 'gemini-2.5-pro',
+        name: 'Gemini 2.5 Pro',
         description: 'Best overall performance for problem extraction'
       },
       {
-        id: 'gemini-2.0-flash',
-        name: 'Gemini 2.0 Flash',
+        id: 'gemini-2.5-flash',
+        name: 'Gemini 2.5 Flash',
         description: 'Faster, more cost-effective model for problem extraction'
       }
     ]
@@ -75,13 +75,13 @@ const modelCategories: ModelCategory[] = [
     ],
     geminiModels: [
       {
-        id: 'gemini-1.5-pro',
-        name: 'Gemini 1.5 Pro',
+        id: 'gemini-2.5-pro',
+        name: 'Gemini 2.5 Pro',
         description: 'Best overall performance for solution generation'
       },
       {
-        id: 'gemini-2.0-flash',
-        name: 'Gemini 2.0 Flash',
+        id: 'gemini-2.5-flash',
+        name: 'Gemini 2.5 Flash',
         description: 'Faster, more cost-effective model for solution generation'
       }
     ]
@@ -214,7 +214,7 @@ function SettingsDialog({ open: openProp, onOpenChange }: SettingsDialogProps) {
 
   return (
      <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-neutral-900 border border-white/10 text-white p-6 rounded-2xl shadow-2xl">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-black/80 border border-white/20 text-white p-6 rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.5)] backdrop-blur-md">
         <DialogHeader className="mb-4">
           <DialogTitle className="text-xl font-semibold">API Settings</DialogTitle>
           <DialogDescription className="text-sm text-neutral-400">

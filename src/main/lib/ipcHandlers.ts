@@ -1,7 +1,8 @@
-import { BrowserWindow, ipcMain, shell } from 'electron'
+import { BrowserWindow, ipcMain, shell, dialog } from 'electron'
 import { configManager } from './config-manager'
 import { state } from '../index'
 import { ProcessingManager } from './processing-manager'
+import { sessionManager, SessionData } from './session-manager'
 export interface IIPCHandler {
   getMainWindow: () => BrowserWindow | null
   takeScreenshot: () => Promise<string>
@@ -202,6 +203,133 @@ export function initializeIpcHandler(deps: IIPCHandler): void {
     } catch (error) {
       console.error('Error opening link:', error)
       return { success: false, error: 'Failed to open link' }
+    }
+  })
+
+  // Session Management IPC Handlers
+  ipcMain.handle('create-new-session', () => {
+    try {
+      const sessionId = sessionManager.createNewSession()
+      return { success: true, sessionId }
+    } catch (error) {
+      console.error('Error creating new session:', error)
+      return { success: false, error: 'Failed to create new session' }
+    }
+  })
+
+  ipcMain.handle('get-current-session', () => {
+    try {
+      const sessionData = sessionManager.loadSessionData()
+      return { success: true, data: sessionData }
+    } catch (error) {
+      console.error('Error getting current session:', error)
+      return { success: false, error: 'Failed to get current session' }
+    }
+  })
+
+  ipcMain.handle('update-session-notes', (_, notes: string) => {
+    try {
+      sessionManager.updateNotes(notes)
+      return { success: true }
+    } catch (error) {
+      console.error('Error updating session notes:', error)
+      return { success: false, error: 'Failed to update notes' }
+    }
+  })
+
+  ipcMain.handle('upload-session-file', async () => {
+    try {
+      const mainWindow = deps.getMainWindow()
+      if (!mainWindow) {
+        throw new Error('No main window available')
+      }
+
+      const result = await dialog.showOpenDialog(mainWindow, {
+        title: 'Upload File to Session',
+        filters: [
+          { name: 'Documents', extensions: ['pdf', 'doc', 'docx', 'txt', 'md'] },
+          { name: 'All Files', extensions: ['*'] }
+        ],
+        properties: ['openFile', 'multiSelections']
+      })
+
+      if (result.canceled || !result.filePaths.length) {
+        return { success: false, error: 'No files selected' }
+      }
+
+      const uploadedFiles = []
+      for (const filePath of result.filePaths) {
+        const sessionFilePath = await sessionManager.addUploadedFile(filePath)
+        uploadedFiles.push({
+          name: require('path').basename(filePath),
+          path: sessionFilePath
+        })
+      }
+
+      return { success: true, files: uploadedFiles }
+    } catch (error) {
+      console.error('Error uploading session file:', error)
+      return { success: false, error: 'Failed to upload file' }
+    }
+  })
+
+  ipcMain.handle('remove-session-file', (_, fileName: string) => {
+    try {
+      sessionManager.removeUploadedFile(fileName)
+      return { success: true }
+    } catch (error) {
+      console.error('Error removing session file:', error)
+      return { success: false, error: 'Failed to remove file' }
+    }
+  })
+
+  ipcMain.handle('save-meeting-transcript', (_, transcript: string) => {
+    try {
+      sessionManager.saveMeetingTranscript(transcript)
+      return { success: true }
+    } catch (error) {
+      console.error('Error saving meeting transcript:', error)
+      return { success: false, error: 'Failed to save transcript' }
+    }
+  })
+
+  ipcMain.handle('cleanup-session', () => {
+    try {
+      sessionManager.cleanupSession()
+      return { success: true }
+    } catch (error) {
+      console.error('Error cleaning up session:', error)
+      return { success: false, error: 'Failed to cleanup session' }
+    }
+  })
+
+  ipcMain.handle('get-all-sessions', () => {
+    try {
+      const sessions = sessionManager.getAllSessions()
+      return { success: true, sessions }
+    } catch (error) {
+      console.error('Error getting all sessions:', error)
+      return { success: false, error: 'Failed to get sessions' }
+    }
+  })
+
+  ipcMain.handle('get-session-directory', () => {
+    try {
+      const directory = sessionManager.getAppDataDir()
+      return { success: true, directory }
+    } catch (error) {
+      console.error('Error getting session directory:', error)
+      return { success: false, error: 'Failed to get directory' }
+    }
+  })
+
+  // Component visibility handlers
+  ipcMain.handle('get-component-visibility', () => {
+    try {
+      return { success: true, visibility: state.componentVisibility }
+    } catch (error) {
+      console.error('Error getting component visibility:', error)
+      return { success: false, error: 'Failed to get component visibility' }
     }
   })
 }

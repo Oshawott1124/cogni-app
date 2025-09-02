@@ -2,7 +2,6 @@ import { QueryProvider } from './providers/query-provider'
 import { WelcomeScreen } from './components/welcome-screen'
 import { useCallback, useEffect, useState } from 'react'
 import SettingsDialog from './components/settings-dailogue'
-import MainApp from './components/main-app'
 import OverlayContainer from './components/overlay-container'
 import { ToastContext } from '@renderer/providers/toast-context'
 import {
@@ -13,21 +12,13 @@ import {
   ToastTitle
 } from './components/ui/toast'
 
-interface AppConfig {
-  apiKey?: string
-  apiProvider?: 'openai' | 'gemini'
-  extractionModel?: string
-  solutionModel?: string
-  debuggingModel?: string
-  language?: string
-}
+
 
 function App(): React.JSX.Element {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
-  const [currentLanguage, setCurrentLanguage] = useState('python')
   const [hasApiKey, setHasApiKey] = useState(false)
-  const [_, setApiKeyDialogOpen] = useState(false)
+  const [sessionStarted, setSessionStarted] = useState(false)
   const [toastState, setToastState] = useState({
     open: false,
     title: '',
@@ -36,9 +27,7 @@ function App(): React.JSX.Element {
   })
 
   const handleOpenSettings = useCallback(() => {
-    console.log('open settings')
     setIsSettingsOpen(true)
-    console.log('isSettingsOpen', isSettingsOpen)
   }, [])
 
   const handleCloseSettings = useCallback((open: boolean) => {
@@ -67,12 +56,6 @@ function App(): React.JSX.Element {
       try {
         const hasKey = await window.electronAPI.checkApiKey()
         setHasApiKey(hasKey)
-
-        if (!hasKey) {
-          setTimeout(() => {
-            setIsSettingsOpen(true)
-          }, 1000)
-        }
       } catch (error) {
         console.error('Error checking API key:', error)
         showToast('Error checking API key', 'Please check your API key', 'error')
@@ -82,17 +65,12 @@ function App(): React.JSX.Element {
     if (isInitialized) {
       checkApiKey()
     }
-  }, [isInitialized])
+  }, [isInitialized, showToast])
 
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        const config = (await window.electronAPI.getConfig()) as AppConfig
-
-        if (config?.language) {
-          setCurrentLanguage(config.language)
-        }
-
+        await window.electronAPI.getConfig()
         markInitialized()
       } catch (error) {
         console.error('Error initializing app:', error)
@@ -103,7 +81,6 @@ function App(): React.JSX.Element {
 
     const onApiKeyInvalid = () => {
       showToast('API key invalid', 'Please check your API key', 'error')
-      setApiKeyDialogOpen(true)
     }
 
     window.electronAPI.onApiKeyInvalid(onApiKeyInvalid)
@@ -115,13 +92,34 @@ function App(): React.JSX.Element {
     }
   }, [markInitialized, showToast])
 
-  const handleLanguageChange = useCallback((language: string) => {
-    setCurrentLanguage(language)
-    window.__LANGUAGE__ = language
-  }, [])
+  const handleStartSession = useCallback(async () => {
+    try {
+      const result = await window.electronAPI.createNewSession()
+      if (result.success) {
+        setSessionStarted(true)
+        showToast('Session Started', `New session created: ${result.sessionId}`, 'success')
+        console.log('New session created:', result.sessionId)
+      } else {
+        showToast('Error', 'Failed to create new session', 'error')
+      }
+    } catch (error) {
+      console.error('Error creating new session:', error)
+      showToast('Error', 'Failed to create new session', 'error')
+    }
+  }, [showToast])
+
+  // Ensure window is interactive when showing welcome screen
+  useEffect(() => {
+    if (isInitialized && !sessionStarted) {
+      // When showing welcome screen, always make window interactive
+      window.electronAPI.setMouseIgnore(false)
+    }
+  }, [isInitialized, sessionStarted])
 
   useEffect(() => {
     const unsubscribeSettings = window.electronAPI.onShowSettings(() => {
+      // Ensure window is interactive when settings dialog opens
+      window.electronAPI.setMouseIgnore(false)
       setIsSettingsOpen(true)
     })
 
@@ -136,11 +134,16 @@ function App(): React.JSX.Element {
         <ToastContext.Provider value={{ showToast }}>
           <div className="relative w-screen h-screen bg-transparent overflow-hidden">
             {isInitialized ? (
-              hasApiKey ? (
-                // Show overlay container instead of main app
+              sessionStarted ? (
+                // Show overlay container when session is started
                 <OverlayContainer />
               ) : (
-                <WelcomeScreen onOpenSettings={handleOpenSettings} />
+                // Always show welcome screen first, regardless of API key status
+                <WelcomeScreen 
+                  onOpenSettings={handleOpenSettings} 
+                  onStartSession={handleStartSession}
+                  hasApiKey={hasApiKey}
+                />
               )
             ) : (
               <div className="min-h-screen bg-black flex items-center justify-center">

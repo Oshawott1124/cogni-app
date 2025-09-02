@@ -159,6 +159,24 @@ const electronAPI = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   removeListener: (eventName: string, callback: (...args: any[]) => void) => {
     ipcRenderer.removeListener(eventName, callback)
+  },
+
+  // Session Management APIs
+  createNewSession: () => ipcRenderer.invoke('create-new-session'),
+  getCurrentSession: () => ipcRenderer.invoke('get-current-session'),
+  updateSessionNotes: (notes: string) => ipcRenderer.invoke('update-session-notes', notes),
+  uploadSessionFile: () => ipcRenderer.invoke('upload-session-file'),
+  removeSessionFile: (fileName: string) => ipcRenderer.invoke('remove-session-file', fileName),
+  cleanupSession: () => ipcRenderer.invoke('cleanup-session'),
+  getAllSessions: () => ipcRenderer.invoke('get-all-sessions'),
+  getSessionDirectory: () => ipcRenderer.invoke('get-session-directory'),
+
+  // Component Visibility APIs
+  getComponentVisibility: () => ipcRenderer.invoke('get-component-visibility'),
+  onComponentVisibilityChanged: (callback: (data: { component: string; visible: boolean }) => void) => {
+    const subscription = (_, data: { component: string; visible: boolean }) => callback(data)
+    ipcRenderer.on('component-visibility-changed', subscription)
+    return () => ipcRenderer.removeListener('component-visibility-changed', subscription)
   }
 }
 
