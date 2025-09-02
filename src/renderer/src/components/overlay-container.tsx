@@ -223,37 +223,37 @@ const OverlayContainer: React.FC = () => {
         }}
       >
         <OverlayInteractionContext.Provider value={{ setInput, sendCommand }}>
-          {componentVisibility.controlBar && (
+          <div style={{ display: componentVisibility.controlBar ? 'block' : 'none' }}>
             <ControlBar
               isEditMode={isEditMode}
               position={positions['control-bar']}
               onPositionChange={(pos) => updatePosition('control-bar', pos)}
-              onMouseEnter={() => setIsMouseOverAnyComponent(true)} // Pass down mouse events
-              onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
+              onMouseEnter={() => componentVisibility.controlBar && setIsMouseOverAnyComponent(true)}
+              onMouseLeave={() => componentVisibility.controlBar && setIsMouseOverAnyComponent(false)}
             />
-          )}
+          </div>
           
-          {componentVisibility.suggestionArea && (
+          <div style={{ display: componentVisibility.suggestionArea ? 'block' : 'none' }}>
             <SuggestionArea
               isEditMode={isEditMode}
               position={positions['suggestion-area']}
               onPositionChange={(pos) => updatePosition('suggestion-area', pos)}
               aiResponse={aiResponse}
               nextStepSuggestions={nextStepSuggestions}
-              onMouseEnter={() => setIsMouseOverAnyComponent(true)} // Pass down mouse events
-              onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
+              onMouseEnter={() => componentVisibility.suggestionArea && setIsMouseOverAnyComponent(true)}
+              onMouseLeave={() => componentVisibility.suggestionArea && setIsMouseOverAnyComponent(false)}
             />
-          )}
+          </div>
           
-          {componentVisibility.notesComponent && (
+          <div style={{ display: componentVisibility.notesComponent ? 'block' : 'none' }}>
             <NotesComponent // Changed from HintComponent
               isEditMode={isEditMode}
               position={positions['notes-component']} // Changed from hint-component
               onPositionChange={(pos) => updatePosition('notes-component', pos)} // Changed from hint-component
-              onMouseEnter={() => setIsMouseOverAnyComponent(true)} // Pass down mouse events
-              onMouseLeave={() => setIsMouseOverAnyComponent(false)} // Pass down mouse events
+              onMouseEnter={() => componentVisibility.notesComponent && setIsMouseOverAnyComponent(true)}
+              onMouseLeave={() => componentVisibility.notesComponent && setIsMouseOverAnyComponent(false)}
             />
-          )}
+          </div>
           
         </OverlayInteractionContext.Provider>
       </div>

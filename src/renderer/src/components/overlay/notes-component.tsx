@@ -194,7 +194,7 @@ const NotesComponent: React.FC<NotesComponentProps> = ({
           color: '#ffffff',
           margin: 0
         }}>
-          📝 Meeting Notes
+          Meeting Notes
         </h3>
         
         {!isEditing && (

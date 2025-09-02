@@ -3,7 +3,7 @@ import DraggableComponent from './draggable-component'
 import { 
   Mic, 
   Monitor, 
-  CircleX,
+  X,
   Database
 } from 'lucide-react'
 import { COMMAND_KEY } from '@renderer/lib/utils'
@@ -81,11 +81,17 @@ const ControlBar: React.FC<ControlBarProps> = ({
   }
 
 
-  const handleHangupClick = (e: React.MouseEvent) => {
+  const handleCloseClick = async (e: React.MouseEvent) => {
     e.stopPropagation()
     if (isEditMode) return
-    console.log('Hangup clicked')
-    // Handle disconnect/hangup
+    console.log('Closing overlay...')
+    
+    try {
+      // Hide the main window (close overlay)
+      await window.electronAPI.toggleMainWindow()
+    } catch (error) {
+      console.error('Failed to close overlay:', error)
+    }
   }
 
   const handleMemoryClick = (e: React.MouseEvent) => {
@@ -393,24 +399,36 @@ const ControlBar: React.FC<ControlBarProps> = ({
           )}
         </div>
 
-        {/* Hangup Button */}
+        {/* Close Button */}
         <button
-          onClick={handleHangupClick}
+          onClick={handleCloseClick}
           style={{
-            width: '60px',
+            width: '44px',
             height: '44px',
             borderRadius: '8px',
             border: 'none',
-            background: 'rgba(236, 34, 37, 0.8)',
-            color: 'white',
+            background: 'rgba(88, 101, 242, 0.7)',
+            color: 'rgba(255, 255, 255, 0.7)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: isEditMode ? 'default' : 'pointer',
             transition: 'all 0.2s ease'
           }}
+          onMouseEnter={(e) => {
+            if (!isEditMode) {
+              e.currentTarget.style.background = 'rgba(88, 101, 242, 0.8)'
+              e.currentTarget.style.color = 'white'
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (!isEditMode) {
+              e.currentTarget.style.background = 'rgba(88, 101, 242, 0.7)'
+              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
+            }
+          }}
         >
-          <CircleX size={20} />
+          <X size={18} />
         </button>
 
       </div>
