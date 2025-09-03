@@ -3,7 +3,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/oshawott1124/cogni-app)
 [![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)](https://github.com/oshawott1124/cogni-app/issues)
-All right reserved @Complexity LLC 2025
 
 An intelligent, screen-aware AI assistant that uses screenshots to understand your context and provide help through a customizable, interactive overlay. Built with Electron, React, and TypeScript.
 
