@@ -83,6 +83,7 @@ npm run format
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Copyright (c) Complexity LLC. All rights reserved.
 
 ## Acknowledgments
 

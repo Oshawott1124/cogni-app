@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import DraggableComponent from './draggable-component'
 import { 
   Mic, 
@@ -99,20 +99,6 @@ const ControlBar: React.FC<ControlBarProps> = ({
     if (isEditMode) return
     setIsMemoryDropdownOpen(!isMemoryDropdownOpen)
   }
-
-  const handleNotesChange = useCallback(async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newNotes = e.target.value
-    const updatedData = { ...memoryData, notes: newNotes }
-    setMemoryData(updatedData)
-    
-    try {
-      await window.electronAPI.updateSessionNotes(newNotes)
-      // Dispatch event to notify other components
-      window.dispatchEvent(new CustomEvent('memoryUpdated'))
-    } catch (error) {
-      console.error('Error updating session notes:', error)
-    }
-  }, [memoryData])
 
   const handleFileUpload = useCallback(async () => {
     try {
